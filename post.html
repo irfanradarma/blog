@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — Irfan Radarma</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400&family=Lato:wght@300;400&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#f7f5f0; --paper:#fdfcf9; --ink:#111110; --dim:#888680; --rule:#ddd9d1; --warm:#c8a96e; }
+    *,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--bg); color:var(--ink); font-family:'Lato',sans-serif; font-weight:300; line-height:1.7; -webkit-font-smoothing:antialiased; }
+
+    /* NAV */
+    nav { position:fixed; top:0; left:0; right:0; z-index:100; background:rgba(247,245,240,0.92); backdrop-filter:blur(12px); border-bottom:1px solid var(--rule); display:flex; align-items:center; justify-content:space-between; padding:0 max(40px,5vw); height:56px; }
+    .nav-name { font-family:'IBM Plex Mono',monospace; font-size:0.7rem; font-weight:400; letter-spacing:0.15em; text-transform:uppercase; color:var(--ink); text-decoration:none; }
+    .nav-back { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); text-decoration:none; transition:color 0.15s; }
+    .nav-back:hover { color:var(--ink); }
+
+    /* STATES */
+    #state-loading, #state-error { display:flex; align-items:center; justify-content:center; min-height:100vh; font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:300; font-style:italic; color:var(--dim); }
+    #state-error { flex-direction:column; gap:1.2rem; }
+    #state-error a { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule); padding-bottom:2px; }
+    #state-error a:hover { color:var(--ink); }
+
+    /* POST */
+    #post { display:none; }
+
+    .post-header { padding-top:56px; border-bottom:1px solid var(--rule); padding-bottom:4rem; }
+    .post-header-inner { max-width:720px; margin:0 auto; padding:5rem max(40px,5vw) 0; }
+
+    .post-cat { font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:300; letter-spacing:0.2em; text-transform:uppercase; color:var(--warm); margin-bottom:1.5rem; }
+
+    .post-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2.2rem,5vw,3.8rem); font-weight:300; line-height:1.1; color:var(--ink); margin-bottom:1.8rem; }
+
+    .post-meta { display:flex; gap:2.5rem; flex-wrap:wrap; font-family:'IBM Plex Mono',monospace; font-size:0.62rem; font-weight:300; letter-spacing:0.1em; color:var(--dim); border-top:1px solid var(--rule); padding-top:1.2rem; margin-top:1.2rem; }
+
+    /* BODY */
+    .post-body { max-width:720px; margin:0 auto; padding:4.5rem max(40px,5vw) 7rem; }
+
+    .post-body p { font-size:1rem; color:var(--dim); line-height:1.9; margin-bottom:1.5rem; }
+    .post-body p strong { color:var(--ink); font-weight:400; }
+    .post-body p em { font-style:italic; }
+
+    .post-body h2 { font-family:'Cormorant Garamond',serif; font-size:1.9rem; font-weight:400; color:var(--ink); margin:3rem 0 1rem; line-height:1.2; }
+    .post-body h3 { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:400; color:var(--ink); margin:2rem 0 0.6rem; font-style:italic; }
+
+    .post-body ul, .post-body ol { margin:0 0 1.5rem 1.5rem; color:var(--dim); font-size:1rem; line-height:1.85; }
+    .post-body li { margin-bottom:0.4rem; }
+    .post-body li strong { color:var(--ink); font-weight:400; }
+
+    .post-body blockquote { border-left:2px solid var(--warm); margin:2rem 0; padding:0.5rem 0 0.5rem 1.8rem; font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:300; font-style:italic; color:var(--ink); line-height:1.5; }
+
+    .post-body hr { border:none; border-top:1px solid var(--rule); margin:3rem 0; }
+
+    .post-footer { padding:2.5rem 0 0; border-top:1px solid var(--rule); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+    .author-name { font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--ink); }
+    .author-title { font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:300; letter-spacing:0.1em; color:var(--dim); margin-top:0.2rem; }
+    .back-link { font-family:'IBM Plex Mono',monospace; font-size:0.65rem; font-weight:300; letter-spacing:0.12em; text-transform:uppercase; color:var(--dim); text-decoration:none; border-bottom:1px solid var(--rule); padding-bottom:2px; transition:color 0.15s, border-color 0.15s; }
+    .back-link:hover { color:var(--ink); border-color:var(--ink); }
+
+    footer { border-top:1px solid var(--rule); padding:2rem max(40px,5vw); display:flex; justify-content:space-between; align-items:center; font-family:'IBM Plex Mono',monospace; font-size:0.6rem; font-weight:300; letter-spacing:0.1em; color:var(--dim); }
+
+    /* Fade in */
+    .fade { opacity:0; transform:translateY(14px); transition:opacity 0.55s ease, transform 0.55s ease; }
+    .fade.in { opacity:1; transform:none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-name" href="index.html">Irfan Radarma</a>
+  <a class="nav-back" href="index.html#blog">← All posts</a>
+</nav>
+
+<!-- Loading state -->
+<div id="state-loading">Loading…</div>
+
+<!-- Error state -->
+<div id="state-error" style="display:none;">
+  <span>Post not found.</span>
+  <a href="index.html#blog">← Back to blog</a>
+</div>
+
+<!-- Post -->
+<div id="post">
+  <div class="post-header">
+    <div class="post-header-inner">
+      <div class="post-cat fade" id="post-cat"></div>
+      <h1 class="post-title fade" id="post-title"></h1>
+      <div class="post-meta fade">
+        <span>Teuku Raja Irfan Radarma</span>
+        <span id="post-date"></span>
+        <span id="post-cat-meta"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="post-body fade" id="post-body"></div>
+
+  <footer>
+    <span>© 2025 Teuku Raja Irfan Radarma</span>
+    <span>Jakarta, Indonesia</span>
+  </footer>
+</div>
+
+<script>
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  async function loadPost() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('post');
+
+    if (!slug) { showError(); return; }
+
+    try {
+      const res = await fetch(`blog/${slug}.json`);
+      if (!res.ok) throw new Error('not found');
+      const data = await res.json();
+      renderPost(data);
+    } catch {
+      showError();
+    }
+  }
+
+  function renderPost(data) {
+    document.title = `${data.title} — Irfan Radarma`;
+
+    document.getElementById('post-cat').textContent      = data.category;
+    document.getElementById('post-title').textContent    = data.title;
+    document.getElementById('post-date').textContent     = formatDate(data.date);
+    document.getElementById('post-cat-meta').textContent = data.category;
+
+    // Body HTML from JSON
+    const bodyEl = document.getElementById('post-body');
+    bodyEl.innerHTML = data.body + `
+      <div class="post-footer">
+        <div>
+          <div class="author-name">Teuku Raja Irfan Radarma</div>
+          <div class="author-title">IT Auditor &amp; Data Specialist · Ministry of Finance, Indonesia</div>
+        </div>
+        <a class="back-link" href="index.html#blog">← Back to blog</a>
+      </div>`;
+
+    // Show post, hide loader
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('post').style.display = 'block';
+
+    // Trigger fade-in
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.fade').forEach((el, i) => {
+        setTimeout(() => el.classList.add('in'), i * 80);
+      });
+    });
+  }
+
+  function showError() {
+    document.getElementById('state-loading').style.display = 'none';
+    document.getElementById('state-error').style.display  = 'flex';
+  }
+
+  loadPost();
+</script>
+</body>
+</html>
